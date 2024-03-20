@@ -11,10 +11,14 @@ import (
 	"github.com/debdutdeb/gopark/pkg/progressbar"
 )
 
+var ErrNotFound = errors.New("not found")
+
+// DownloadSilent is your normal file download path, shows no progress
 func DownloadSilent(url string, path string) error {
 	return download(url, path, false, "")
 }
 
+// DownloadWithProgressBar shows a very basic progress bar for the file
 func DownloadWithProgressBar(label, url, path string) error {
 	return download(url, path, true, label)
 }
@@ -26,7 +30,7 @@ func download(url, path string, showProgress bool, label string) error {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return errors.New("nodejs version not found")
+		return ErrNotFound
 	}
 
 	dir := filepath.Dir(path)
@@ -72,7 +76,8 @@ func download(url, path string, showProgress bool, label string) error {
 	return w.Sync()
 }
 
-// not a full implementation of install, of course
+// DumbInstall copies files and directories from source to destination
+// follows symlinks
 func DumbInstall(dst, src string) (err error) {
 	var links map[string]string = make(map[string]string)
 
@@ -145,10 +150,13 @@ func DumbInstall(dst, src string) (err error) {
 	return
 }
 
-func MkdirTemp() (string, error) {
-	dir, err := os.MkdirTemp("", "booster")
+// MkdirTemp creates a temporary directory and returns the followed path of the new directory
+// Useful for environments where TMP_DIR is a symlink and you need the true path
+func MkdirTemp(dir, pattern string) (string, error) {
+	dir, err := os.MkdirTemp(dir, pattern)
 	if err != nil {
 		return "", err
 	}
+
 	return filepath.EvalSymlinks(dir)
 }
