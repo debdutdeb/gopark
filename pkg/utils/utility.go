@@ -2,8 +2,9 @@ package utils
 
 import (
 	"errors"
-	"io/fs"
+	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -97,7 +98,13 @@ func DumbInstall(dst, src string) (err error) {
 			}
 
 			if relSrc, err := filepath.Rel(src, linkSrc); err == nil {
-				links[filepath.Join(dst, relSrc)] = filepath.Join(dst, rel)
+				newDst := filepath.Join(dst, rel)
+				newSrc := filepath.Join(dst, relSrc)
+				newRelSrc, err := filepath.Rel(filepath.Dir(newDst), newSrc)
+				if err != nil {
+					return err
+				}
+				links[newRelSrc] = newDst
 				return nil
 			}
 		}
@@ -140,6 +147,7 @@ func DumbInstall(dst, src string) (err error) {
 			os.Remove(dst)
 			err = os.Symlink(src, dst)
 			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to create symlink: %q", err)
 				break
 			}
 		} else if err != nil {
