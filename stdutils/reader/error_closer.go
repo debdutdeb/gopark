@@ -65,7 +65,7 @@ func ErrorCloserWithTimeout(reader io.Reader, timeout time.Duration) (io.ReadClo
 }
 
 func (e *errorCloser) Close() error {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultCloseTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), e.timeout)
 	defer cancel()
 
 	select {
