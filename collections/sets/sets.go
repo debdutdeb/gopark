@@ -43,5 +43,10 @@ func Collect[T comparable](seq iter.Seq[T]) Set[T] {
 
 // Clone copies the Set passed to a new Set
 func Clone[T comparable](set Set[T]) Set[T] {
-	return Collect(maps.Keys(set))
+	return Collect(Iter(set))
+}
+
+// Iter returns an iterator over the Set
+func Iter[T comparable](set Set[T]) iter.Seq[T] {
+	return maps.Keys(set)
 }
