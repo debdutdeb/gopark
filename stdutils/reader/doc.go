@@ -50,6 +50,12 @@ Once the context is cancelled or its deadline is exceeded, Read returns the cont
 
 # Using WrapReaderInContext
 
+[WrapReaderInContext] makes an [io.Reader] context aware, however there is a caveat, if a goroutine is already blocked at the underlying `Read`, cancelling the context means nothing.
+
+[WrapReaderInContext] only mostly helps in one case, where Read is happening in small chunks.
+
+Ideally the underlying struct that implements Read should be context aware, and sharing the same context with [WrapReaderInContext] makes no sense. 
+
 Example code
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
