@@ -20,7 +20,7 @@ type readHasher struct {
 	hash.Hash
 }
 
-// Sha256Hasher returns a [ReadHasher] that can be used to get the sha256 hash of 
+// Sha256Hasher returns a [ReadHasher] that can be used to get the sha256 hash of
 // the underlying bytes that's been read.
 //
 // Example:
@@ -32,7 +32,14 @@ func Sha256Hasher(reader io.Reader) ReadHasher {
 	h := sha256.New()
 	return &readHasher{
 		Reader: io.TeeReader(reader, h),
-		Hash:       h,
+		Hash:   h,
 	}
 }
 
+// Write is a noop, ReadHasher should not be directly written to.
+func (r *readHasher) Write(_ []byte) (n int, err error) {
+	return 0, nil
+}
+
+// Reset is a noop, ReadHasher should not be manually reset.
+func (r *readHasher) Reset() {}
