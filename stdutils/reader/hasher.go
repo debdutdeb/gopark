@@ -11,13 +11,14 @@ import (
 // This allows any ReadHasher to provide the underlying hash of the data that's been read.
 type ReadHasher interface {
 	io.Reader
-	hash.Hash
+	// Sum returns the hash of the read bytes.
+	Sum(b []byte) []byte
 }
 
 type readHasher struct {
 	io.Reader
 
-	hash.Hash
+	hash hash.Hash
 }
 
 // Sha256Hasher returns a [ReadHasher] that can be used to get the sha256 hash of
@@ -32,14 +33,11 @@ func Sha256Hasher(reader io.Reader) ReadHasher {
 	h := sha256.New()
 	return &readHasher{
 		Reader: io.TeeReader(reader, h),
-		Hash:   h,
+		hash:   h,
 	}
 }
 
-// Write is a noop, ReadHasher should not be directly written to.
-func (r *readHasher) Write(_ []byte) (n int, err error) {
-	return 0, nil
+// Sum returns the hash of the read bytes.
+func (r *readHasher) Sum(b []byte) []byte {
+	return r.hash.Sum(b)
 }
-
-// Reset is a noop, ReadHasher should not be manually reset.
-func (r *readHasher) Reset() {}
