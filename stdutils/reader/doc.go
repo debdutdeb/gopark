@@ -1,7 +1,11 @@
 /*
 This package primarily expands on [io.Reader].
 
-The primary helper is [ErrorCloser]. It takes an [io.Reader] and returns an [io.ReadCloser] and an error channel.
+
+- [ErrorCloser]: It takes an [io.Reader] and returns an [io.ReadCloser] and an error channel
+
+- [WrapReaderInContext]: WrapReaderInContext makes [io.Reader]'s Read receiver context aware. If the context expires, Read fails
+
 
 Error closer is meant to be used in go routines that need to pipe data to a reader but the process might fail
 Caller should call Close on the readcloser to check the error from the channel
@@ -39,5 +43,26 @@ Example code
 	}
 
 Use [ErrorCloserWithTimeout] to pass a custom timeout (instead of default 10 seconds) before Close gives up on waiting for errCh.
+
+Another helper is [WrapReaderInContext]. It takes an [io.Reader] and a [context.Context] and returns an [io.Reader] that checks the context before every Read.
+
+Once the context is cancelled or its deadline is exceeded, Read returns the context's error instead of delegating to the underlying reader. This is useful to make a reader responsive to a caller's context, for example one built from a request, without the underlying reader supporting it natively.
+
+# Using WrapReaderInContext
+
+Example code
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	reader := WrapReaderInContext(reader, ctx)
+
+	// Read returns ctx.Err() once ctx is done, instead of blocking on the
+	// underlying reader
+	_, err := io.Copy(dst, reader)
+
+	if err != nil {
+	  log.Fatal(err)
+	}
 */
 package reader
