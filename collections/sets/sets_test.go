@@ -1,6 +1,10 @@
 package sets
 
-import "testing"
+import (
+	"iter"
+	"maps"
+	"testing"
+)
 
 type testCase[T comparable] struct {
 	want T
@@ -96,15 +100,34 @@ func TestSets(t *testing.T) {
 		}
 	})
 
-	t.Run("Iter", func(t *testing.T) {
-		slice := []int{1, 2, 3, 4}
-		set := New(slice...)
-		i := 0
-		for e := range set {
-			if e != slice[i] {
-				t.Fatalf("got %d expected %d\n", e, slice[i])
+	t.Run("Uniqueness", func(t *testing.T) {
+		set := New[int]()
+		Add(set, 1)
+		Add(set, 1)
+		if len(set) != 1 {
+			t.Fatalf("expected set to be of size 1 as two elements are nonunique, got %d\n", len(set))
+		}
+		next, _ := iter.Pull(maps.Keys(set))
+		e, _ := next()
+		if e != 1 {
+			t.Fatalf("expected 1, got %d\n", e)
+		}
+	})
+
+	t.Run("Collect", func(t *testing.T) {
+		m := make(map[string]bool) // the most common set usage
+		m["key1"] = true
+		m["key2"] = true
+		m["key3"] = true
+		set1 := Collect(maps.Keys(m))
+		if len(m) != len(set1) {
+			t.Fatalf("expected %d got %d length\n", len(m), len(set1))
+		}
+		for e := range set1 {
+			_, exists := m[e]
+			if !exists {
+				t.Fatalf("%s doesn't exist in source map\n", e)
 			}
-			i++
 		}
 	})
 }
