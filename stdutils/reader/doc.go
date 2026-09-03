@@ -70,5 +70,26 @@ Example code
 	if err != nil {
 	  log.Fatal(err)
 	}
+
+# Using io.Reader super-interfaces
+
+These are composable. For example to create a reader to output both hash and bytecount read from it
+
+	type fullReader struct {
+		io.Reader
+		ByteCount func() int
+		Sum func() string
+	}
+	var r io.Reader
+	f := &fullReader{
+	}
+	ner := Ner(r)
+	f.ByteCount = func() int { return ner.ByteCount() }
+	hasher := Sha256Hasher(ner)
+	f.Sum = func() string { return hex.EncodeToString(hasher.Sum(nil)) }
+	f.Reader = hasher
+
+	// use f as the reader now
+	var _ io.Reader = f
 */
 package reader

@@ -15,8 +15,8 @@ type readNer struct {
 	n int
 }
 
-// NewNer returns a ReadNer interface from an [io.Reader]
-func NewNer(reader io.Reader) ReadNer {
+// Ner returns a ReadNer interface from an [io.Reader]
+func Ner(reader io.Reader) ReadNer {
 	return &readNer{Reader: reader, n: 0}
 }
 
@@ -29,3 +29,4 @@ func (r *readNer) Read(buffer []byte) (n int, err error) {
 func (r *readNer) ByteCount() int {
 	return r.n
 }
+
